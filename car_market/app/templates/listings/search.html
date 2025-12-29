@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Arama - CarHub{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-3">
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-body">
+        <h5 class="mb-3"><i class="bi bi-funnel me-2"></i>Filtreler</h5>
+        <form method="get">
+          <div class="mb-3">
+            <label class="form-label">Kelime</label>
+            <input type="text" class="form-control" name="query" value="{{ search_query }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Marka</label>
+            <input type="text" class="form-control" name="brand" value="{{ request.args.get('brand','') }}">
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label">Min ₺</label>
+              <input type="number" class="form-control" name="min_price" value="{{ request.args.get('min_price','') }}">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Max ₺</label>
+              <input type="number" class="form-control" name="max_price" value="{{ request.args.get('max_price','') }}">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Yakıt</label>
+            <input type="text" class="form-control" name="fuel_type" value="{{ request.args.get('fuel_type','') }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Konum</label>
+            <input type="text" class="form-control" name="location" value="{{ request.args.get('location','') }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Sırala</label>
+            <select class="form-select" name="sort_by">
+              <option value="created_at" {% if request.args.get('sort_by','created_at')=='created_at' %}selected{% endif %}>Tarihe göre</option>
+              <option value="price" {% if request.args.get('sort_by')=='price' %}selected{% endif %}>Fiyata göre</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <select class="form-select" name="sort_order">
+              <option value="desc" {% if request.args.get('sort_order','desc')=='desc' %}selected{% endif %}>Azalan</option>
+              <option value="asc" {% if request.args.get('sort_order')=='asc' %}selected{% endif %}>Artan</option>
+            </select>
+          </div>
+          <button class="btn btn-gradient w-100" type="submit">Uygula</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-9">
+    <h2 class="mb-4"><i class="bi bi-search me-2"></i>Arama Sonuçları</h2>
+
+    {% if listings and listings.items|length %}
+    <div class="row g-4">
+      {% for item in listings.items %}
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100 rounded-4">
+          {% if item.images and item.images|length > 1 %}
+          <div id="searchCardCarousel-{{ item.id }}" class="carousel slide rounded-top-4 overflow-hidden">
+            <div class="carousel-inner">
+              {% for img in item.images %}
+              <div class="carousel-item {% if loop.first %}active{% endif %}">
+                <div class="ratio ratio-16x9 bg-light">
+                  <img src="{{ url_for('main.uploaded_file', filename='car_images/' ~ img.filename) }}" class="d-block w-100 h-100 object-fit-cover" alt="img-{{ loop.index }}">
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#searchCardCarousel-{{ item.id }}" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Önceki</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#searchCardCarousel-{{ item.id }}" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Sonraki</span>
+            </button>
+          </div>
+          {% else %}
+          <div class="ratio ratio-16x9 bg-light rounded-top-4">
+            {% set img = item.images[0] if item.images and item.images|length else None %}
+            {% if img %}
+            <img src="{{ url_for('main.uploaded_file', filename='car_images/' ~ img.filename) }}" class="w-100 h-100 object-fit-cover rounded-top-4" alt="{{ item.title }}">
+            {% else %}
+            <img src="{{ url_for('static', filename='images/placeholder_car.jpg') }}" class="w-100 h-100 object-fit-cover rounded-top-4" alt="{{ item.title }}">
+            {% endif %}
+          </div>
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title mb-1">{{ item.title }}</h5>
+            <div class="text-muted small mb-2">{{ item.brand }} • {{ item.model }} • {{ item.year }}</div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="fw-bold text-success">{{ '%.0f'|format(item.price) }} ₺</span>
+              <a href="{{ url_for('listings.listing_detail', listing_id=item.id) }}" class="btn btn-outline-gradient btn-sm">İncele</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if listings.pages > 1 %}
+    <nav class="mt-4">
+      <ul class="pagination justify-content-center">
+        <li class="page-item {% if not listings.has_prev %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('main.search', page=listings.prev_num, **request.args) }}">Önceki</a>
+        </li>
+        {% for p in listings.iter_pages() %}
+          {% if p %}
+          <li class="page-item {% if p == listings.page %}active{% endif %}"><a class="page-link" href="{{ url_for('main.search', page=p, **request.args) }}">{{ p }}</a></li>
+          {% else %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
+        {% endfor %}
+        <li class="page-item {% if not listings.has_next %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('main.search', page=listings.next_num, **request.args) }}">Sonraki</a>
+        </li>
+      </ul>
+    </nav>
+    {% endif %}
+    {% else %}
+      <div class="alert alert-warning">Sonuç bulunamadı.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+

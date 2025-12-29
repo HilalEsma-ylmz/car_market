@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Panelim - CarHub{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-speedometer2 me-2"></i>Panelim</h2>
+
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm rounded-4 h-100">
+      <div class="card-body">
+        <h5 class="mb-2">Genel Bilgiler</h5>
+        <div class="text-muted">Merhaba, {{ current_user.username }}</div>
+        {% if total_listings is defined %}
+        <div class="mt-3">Toplam İlan: <span class="fw-bold">{{ total_listings }}</span></div>
+        <div>Aktif İlan: <span class="fw-bold">{{ active_listings }}</span></div>
+        <a class="btn btn-gradient btn-sm mt-3" href="{{ url_for('listings.create_listing') }}">Yeni İlan</a>
+        {% else %}
+        <div class="mt-3">Toplam Favori: <span class="fw-bold">{{ total_favorites }}</span></div>
+        <div>Okunmamış Mesaj: <span class="fw-bold">{{ unread_messages }}</span></div>
+        <a class="btn btn-gradient btn-sm mt-3" href="{{ url_for('user.favorites') }}">Favoriler</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-8">
+    <div class="card border-0 shadow-sm rounded-4 h-100">
+      <div class="card-body">
+        {% if listings is defined %}
+        <h5 class="mb-3">Son İlanlarım</h5>
+        {% if listings %}
+        <ul class="list-group list-group-flush">
+          {% for item in listings %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-semibold">{{ item.title }}</div>
+              <div class="text-muted small">{{ item.created_at.strftime('%d.%m.%Y') if item.created_at }}</div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-light text-dark"><i class="bi bi-heart-fill text-danger"></i> {{ item.favorites|length }}</span>
+              <a class="btn btn-sm btn-outline-gradient" href="{{ url_for('listings.edit_listing', listing_id=item.id) }}">Düzenle</a>
+              <form action="{{ url_for('listings.delete_listing', listing_id=item.id) }}" method="post" onsubmit="return confirm('Bu ilanı silmek istediğinize emin misiniz?');">
+                <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
+              </form>
+              <a class="btn btn-sm btn-gradient" href="{{ url_for('listings.listing_detail', listing_id=item.id) }}">Görüntüle</a>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="text-muted">Henüz ilan yok.</div>
+        {% endif %}
+        {% else %}
+        <h5 class="mb-3">Son Favorilerim</h5>
+        {% if favorites %}
+        <ul class="list-group list-group-flush">
+          {% for fav in favorites %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div class="fw-semibold">{{ fav.listing.title if fav.listing }}</div>
+            <a class="btn btn-sm btn-gradient" href="{{ url_for('listings.listing_detail', listing_id=fav.listing_id) }}">Görüntüle</a>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="text-muted">Henüz favori yok.</div>
+        {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

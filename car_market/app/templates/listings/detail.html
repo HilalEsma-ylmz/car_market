@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ listing.title }} - CarHub{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    {% set images = listing.images %}
+    {% if images and images|length %}
+    <div id="listingCarousel-{{ listing.id }}" class="carousel slide rounded-4 overflow-hidden shadow-sm">
+      <div class="carousel-indicators">
+        {% for img in images %}
+          <button type="button" data-bs-target="#listingCarousel-{{ listing.id }}" data-bs-slide-to="{{ loop.index0 }}" class="{% if loop.first %}active{% endif %}" aria-current="{% if loop.first %}true{% endif %}" aria-label="Slide {{ loop.index }}"></button>
+        {% endfor %}
+      </div>
+      <div class="carousel-inner">
+        {% for img in images %}
+        <div class="carousel-item {% if loop.first %}active{% endif %}">
+          <div class="ratio ratio-16x9 bg-light">
+            <img src="{{ url_for('main.uploaded_file', filename='car_images/' ~ img.filename) }}" class="d-block w-100 h-100 object-fit-cover" alt="image-{{ loop.index }}">
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#listingCarousel-{{ listing.id }}" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Önceki</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#listingCarousel-{{ listing.id }}" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Sonraki</span>
+      </button>
+    </div>
+    {% else %}
+    <div class="ratio ratio-16x9 bg-light rounded-4">
+      <img src="{{ url_for('static', filename='images/placeholder_car.jpg') }}" class="w-100 h-100 object-fit-cover rounded-4" alt="{{ listing.title }}">
+    </div>
+    {% endif %}
+  </div>
+  <div class="col-lg-5">
+    <h2 class="mb-2">{{ listing.title }}</h2>
+    <div class="text-muted mb-3">{{ listing.brand }} • {{ listing.model }} • {{ listing.year }} • {{ listing.km }} km</div>
+    <div class="h4 text-success mb-3">{{ '%.0f'|format(listing.price) }} ₺</div>
+    <div class="mb-4">
+      <span class="badge bg-secondary me-2">{{ listing.fuel_type }}</span>
+      <span class="badge bg-secondary me-2">{{ listing.gear_type }}</span>
+      <span class="badge bg-secondary me-2">{{ listing.color }}</span>
+      <span class="badge bg-secondary">{{ listing.location }}</span>
+    </div>
+    <div class="d-flex gap-2">
+      {% if current_user.is_authenticated %}
+      {% if current_user.id != listing.seller_id %}
+      {% set is_favorited = (listing.favorites | selectattr('user_id', 'equalto', current_user.id) | list | length) > 0 %}
+      <form method="post" action="{{ url_for('listings.toggle_favorite', listing_id=listing.id) }}" onsubmit="event.preventDefault(); fetch(this.action,{method:'POST'}).then(()=>location.reload());">
+        <button class="btn {% if is_favorited %}btn-danger{% else %}btn-outline-gradient{% endif %}" type="submit">
+          {% if is_favorited %}
+            <i class="bi bi-heart-fill"></i> Favoride
+          {% else %}
+            <i class="bi bi-heart"></i> Favori
+          {% endif %}
+        </button>
+      </form>
+      <a href="{{ url_for('messages.send_message', listing_id=listing.id) }}" class="btn btn-gradient"><i class="bi bi-chat-dots"></i> Mesaj Gönder</a>
+      {% else %}
+      <a href="{{ url_for('listings.edit_listing', listing_id=listing.id) }}" class="btn btn-outline-gradient"><i class="bi bi-pencil"></i> Düzenle</a>
+      <form action="{{ url_for('listings.delete_listing', listing_id=listing.id) }}" method="post" class="d-inline" onsubmit="return confirm('Bu ilanı silmek istiyor musunuz?');">
+        <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Sil</button>
+      </form>
+      <span class="badge bg-secondary ms-2"><i class="bi bi-heart-fill"></i> {{ listing.favorites|length }} favori</span>
+      {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="mt-5">
+  <h4>Açıklama</h4>
+  <p class="mb-0">{{ listing.description }}</p>
+  <div class="text-muted small mt-2">Görüntülenme: {{ listing.view_count }}</div>
+  </div>
+{% endblock %}
+

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}İletişim - CarHub{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-telephone me-2"></i>İletişim</h2>
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-body p-4">
+        <form>
+          <div class="mb-3">
+            <label class="form-label">Ad Soyad</label>
+            <input type="text" class="form-control" placeholder="Adınız">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" placeholder="ornek@mail.com">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Mesaj</label>
+            <textarea class="form-control" rows="5" placeholder="Mesajınız"></textarea>
+          </div>
+          <button type="button" class="btn btn-gradient">Gönder</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm rounded-4 h-100">
+      <div class="card-body p-4">
+        <h5>İletişim Bilgileri</h5>
+        <ul class="list-unstyled mt-3">
+          <li class="mb-2"><i class="bi bi-geo-alt-fill me-2"></i>İstanbul, Türkiye</li>
+          <li class="mb-2"><i class="bi bi-telephone-fill me-2"></i>+90 555 123 4567</li>
+          <li class="mb-2"><i class="bi bi-envelope-fill me-2"></i>info@carhub.com</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+

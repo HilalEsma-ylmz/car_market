@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}CarHub - İlanlar{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="bi bi-grid-3x3-gap-fill me-2"></i>İlanlar</h2>
+    {% if current_user.is_authenticated %}
+    <a class="btn btn-gradient" href="{{ url_for('listings.create_listing') }}"><i class="bi bi-plus-circle me-1"></i> İlan Oluştur</a>
+    {% endif %}
+  </div>
+
+  {% if listings and listings.items|length %}
+  <div class="row g-4">
+    {% for item in listings.items %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card border-0 shadow-sm h-100 rounded-4">
+        {% if item.images and item.images|length > 1 %}
+        <div id="cardCarousel-{{ item.id }}" class="carousel slide rounded-top-4 overflow-hidden">
+          <div class="carousel-inner">
+            {% for img in item.images %}
+            <div class="carousel-item {% if loop.first %}active{% endif %}">
+              <div class="ratio ratio-16x9 bg-light">
+                <img src="{{ url_for('main.uploaded_file', filename='car_images/' ~ img.filename) }}" class="d-block w-100 h-100 object-fit-cover" alt="img-{{ loop.index }}">
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#cardCarousel-{{ item.id }}" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Önceki</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#cardCarousel-{{ item.id }}" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Sonraki</span>
+          </button>
+        </div>
+        {% else %}
+        <div class="ratio ratio-16x9 bg-light rounded-top-4">
+          {% set img = item.images[0] if item.images and item.images|length else None %}
+          {% if img %}
+          <img src="{{ url_for('main.uploaded_file', filename='car_images/' ~ img.filename) }}" class="w-100 h-100 object-fit-cover rounded-top-4" alt="{{ item.title }}">
+          {% else %}
+          <img src="{{ url_for('static', filename='images/placeholder_car.jpg') }}" class="w-100 h-100 object-fit-cover rounded-top-4" alt="{{ item.title }}">
+          {% endif %}
+        </div>
+        {% endif %}
+        <div class="card-body">
+          <h5 class="card-title mb-1">{{ item.title }}</h5>
+          <div class="text-muted small mb-2">{{ item.brand }} • {{ item.model }} • {{ item.year }}</div>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-success">{{ '%.0f'|format(item.price) }} ₺</span>
+            <a href="{{ url_for('listings.listing_detail', listing_id=item.id) }}" class="btn btn-outline-gradient btn-sm">İncele</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if listings.pages > 1 %}
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+      <li class="page-item {% if not listings.has_prev %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for('listings.listings', page=listings.prev_num) }}">Önceki</a>
+      </li>
+      {% for p in listings.iter_pages() %}
+        {% if p %}
+          <li class="page-item {% if p == listings.page %}active{% endif %}">
+            <a class="page-link" href="{{ url_for('listings.listings', page=p) }}">{{ p }}</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+      {% endfor %}
+      <li class="page-item {% if not listings.has_next %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for('listings.listings', page=listings.next_num) }}">Sonraki</a>
+      </li>
+    </ul>
+  </nav>
+  {% endif %}
+  {% else %}
+    <div class="alert alert-info">Şu anda görüntülenecek ilan bulunamadı.</div>
+  {% endif %}
+{% endblock %}
+

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}İlanı Düzenle - CarHub{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="mb-0"><i class="bi bi-pencil-square me-2"></i>İlanı Düzenle</h2>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4">
+  <div class="card-body p-4">
+    <form method="post" enctype="multipart/form-data">
+      {{ form.hidden_tag() }}
+      <div class="row g-3">
+        <div class="col-md-8">
+          {{ form.title.label(class='form-label') }}
+          {{ form.title(class='form-control') }}
+        </div>
+        <div class="col-md-4">
+          {{ form.price.label(class='form-label') }}
+          {{ form.price(class='form-control') }}
+        </div>
+        <div class="col-md-4">
+          {{ form.brand.label(class='form-label') }}
+          {{ form.brand(class='form-control') }}
+        </div>
+        <div class="col-md-4">
+          {{ form.model.label(class='form-label') }}
+          {{ form.model(class='form-control') }}
+        </div>
+        <div class="col-md-4">
+          {{ form.year.label(class='form-label') }}
+          {{ form.year(class='form-control') }}
+        </div>
+        <div class="col-md-4">
+          {{ form.km.label(class='form-label') }}
+          {{ form.km(class='form-control') }}
+        </div>
+        <div class="col-md-4">
+          {{ form.fuel_type.label(class='form-label') }}
+          {{ form.fuel_type(class='form-select') }}
+        </div>
+        <div class="col-md-4">
+          {{ form.gear_type.label(class='form-label') }}
+          {{ form.gear_type(class='form-select') }}
+        </div>
+        <div class="col-md-4">
+          {{ form.color.label(class='form-label') }}
+          {{ form.color(class='form-control') }}
+        </div>
+        <div class="col-md-8">
+          {{ form.location.label(class='form-label') }}
+          {{ form.location(class='form-control') }}
+        </div>
+        <div class="col-12">
+          {{ form.description.label(class='form-label') }}
+          {{ form.description(class='form-control', rows=5) }}
+        </div>
+      </div>
+      {% if listing.images %}
+      <div class="mt-4">
+        <h6 class="mb-3">Görseller</h6>
+        <div class="d-flex gap-3 flex-wrap">
+          {% for img in listing.images %}
+          <div class="position-relative" style="width:140px;">
+            <img src="{{ url_for('main.uploaded_file', filename='car_images/' ~ img.filename) }}" class="rounded w-100" style="height: 100px; object-fit: cover;" alt="image">
+            <button type="submit" class="btn btn-sm btn-danger position-absolute" style="top:6px; right:6px;" form="del-img-{{ img.id }}"><i class="bi bi-trash"></i></button>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      <div class="mt-3">
+        {{ form.images.label(class='form-label') }}
+        {{ form.images(class='form-control', accept='image/*', multiple=True) }}
+        <div class="form-text">Birden fazla yeni görsel ekleyebilirsiniz (maks. 10).</div>
+      </div>
+      <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-gradient">Kaydet</button>
+        <a href="{{ url_for('listings.listing_detail', listing_id=listing.id) }}" class="btn btn-outline-gradient">İptal</a>
+      </div>
+    </form>
+    {% if listing.images %}
+      {% for img in listing.images %}
+      <form id="del-img-{{ img.id }}" action="{{ url_for('listings.delete_listing_image', image_id=img.id) }}" method="post"></form>
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
